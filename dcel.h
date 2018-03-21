@@ -19,9 +19,11 @@ struct vertex{
 
 struct half_edge{
     vertex *origin;
+    // vertex *target;
     half_edge *twin;
     half_edge *next;
     half_edge *prev;
+    face* f;
 
     half_edge(){
         next = NULL;
@@ -31,6 +33,7 @@ struct half_edge{
 
 struct face{
     half_edge *rep;
+    vector<int> vertices;
 };
 
 class DCEL{
@@ -39,7 +42,7 @@ class DCEL{
         vector<vertex> ver;  
         vector<half_edge> edge;
         vector<face> faces;
-        int V,E;
+        int V,E,F;
 
     DCEL(){
 
@@ -48,12 +51,15 @@ class DCEL{
         ifstream Vinput("FILES/vert1.txt");
         Vinput >> V;
 
+        face *f1 = new face;
+        face *fo = new face;
         
         double x,y;
         for(int i=0;i<V;i++){
             Vinput >> x >> y;
             vertex *coord = new vertex(x,y);
-            ver.push_back(*coord);   
+            ver.push_back(*coord);
+            f1->vertices.push_back(i);   
         }
 
         int a,b;
@@ -62,11 +68,15 @@ class DCEL{
 
             half_edge *edg = new half_edge;
             edg->origin = &ver[a];
+            // edg->target = &ver[b];
             
             half_edge *tw = new half_edge;
             tw->origin = &ver[b]; tw->twin = edg;
+            // tw->target = &ver[a];
 
             edg->twin = tw;
+            edg->f = f1;
+            tw->f = fo;
 
             if(ver[a].incidentEdge == NULL){
                 ver[a].incidentEdge = edg;
@@ -87,8 +97,9 @@ class DCEL{
             edge[b].next = &edge[a];
         }
 
-        face *f1 = new face;
         f1->rep = &edge[0];
+        faces.push_back(*fo);
+        faces.push_back(*f1);
 
         setTypeV();
     }
@@ -144,7 +155,35 @@ class DCEL{
     }
 
     void addDiag(int a,int b){
+        
+        face *nf1 = new face;
+        face *nf2 = new face;
 
+        half_edge *edg = new half_edge;
+        edg->origin = &ver[a]; edg->f = nf1;
+        
+        half_edge *tw = new half_edge;
+        tw->origin = &ver[b]; tw->twin = edg;
+        tw->f = nf2;
+
+        edg->twin = tw;
+        nf1->rep = edg; nf2->rep = tw;
+
+        vector<int>::iterator it1,it2;
+        half_edge lala;
+        for(int i=1;i<faces.size();i++){
+            it1 = find ((faces[i].vertices).begin(), (faces[i].vertices).end(), a);
+            it2 = find ((faces[i].vertices).begin(), (faces[i].vertices).end(), b);
+            
+            if (it1 != (faces[i].vertices).end() && it2 != (faces[i].vertices).end()){
+                lala = *(ver[a].incidentEdge);
+                while(lala.f != &faces[i]){
+                    lala = *(lala.twin->next);
+                }
+                
+                break;
+            }
+        }
     }
 
     //ToDo - sort according to x coord if y is same
