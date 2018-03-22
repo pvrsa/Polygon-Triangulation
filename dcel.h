@@ -3,7 +3,7 @@
 using namespace std;
 
 struct half_edge;
-
+struct face;
 struct vertex{
     double x;
     double y;
@@ -23,7 +23,7 @@ struct half_edge{
     half_edge *twin;
     half_edge *next;
     half_edge *prev;
-    face* f;
+    face *f;
 
     half_edge(){
         next = NULL;
@@ -33,15 +33,15 @@ struct half_edge{
 
 struct face{
     half_edge *rep;
-    vector<int> vertices;
+    vector<vertex*> vertices;
 };
 
 class DCEL{
 
     public:    
-        vector<vertex> ver;  
-        vector<half_edge> edge;
-        vector<face> faces;
+        vector<vertex*> ver;  
+        vector<half_edge*> edge;
+        vector<face*> faces;
         int V,E,F;
 
     DCEL(){
@@ -58,55 +58,55 @@ class DCEL{
         for(int i=0;i<V;i++){
             Vinput >> x >> y;
             vertex *coord = new vertex(x,y);
-            ver.push_back(*coord);
-            f1->vertices.push_back(i);   
+            ver.push_back(coord);
+            f1->vertices.push_back(coord);   
         }
 
         int a,b;
-        for(int i=0;i<V-1;i++){
-            a = i; b = i+1;
+        for(int i=0;i<V;i++){
+            a = i%V; b = (i+1)%V;
 
             half_edge *edg = new half_edge;
-            edg->origin = &ver[a];
-            // edg->target = &ver[b];
+            edg->origin = ver[a];
             
             half_edge *tw = new half_edge;
-            tw->origin = &ver[b]; tw->twin = edg;
-            // tw->target = &ver[a];
+            tw->origin = ver[b]; tw->twin = edg;
 
             edg->twin = tw;
             edg->f = f1;
             tw->f = fo;
 
-            if(ver[a].incidentEdge == NULL){
-                ver[a].incidentEdge = edg;
-                cout << a << ver[a].incidentEdge->origin->x << endl;
+            if(ver[a]->incidentEdge == NULL){
+                ver[a]->incidentEdge = edg;
             }
-            edge.push_back(*edg);
-            edge.push_back(*tw);
+            edge.push_back(edg);
+            edge.push_back(tw);
         }
         E = edge.size();
 
         for(int i=0;i<E;i+=2){
             a = i%E; b = (i+2)%E;
-            edge[a].next = &edge[b];
-            edge[b].prev = &edge[a];
+
+            
+            edge[a]->next = edge[b];
+            edge[b]->prev = edge[a];
+           
 
             a = (i+1)%E; b=(i+3)%E;
-            edge[a].prev = &edge[b];
-            edge[b].next = &edge[a];
+            edge[a]->prev = edge[b];
+            edge[b]->next = edge[a];
         }
 
-        f1->rep = &edge[0];
-        faces.push_back(*fo);
-        faces.push_back(*f1);
+        f1->rep = edge[0];
+        faces.push_back(fo);
+        faces.push_back(f1);
 
         setTypeV();
     }
 
     int turn_check(int p, int q, int r){
-        int val = (ver[q].y - ver[p].y) * (ver[r].x - ver[q].x) -
-                (ver[q].x - ver[p].x) * (ver[r].y - ver[q].y);
+        int val = (ver[q]->y - ver[p]->y) * (ver[r]->x - ver[q]->x) -
+                (ver[q]->x - ver[p]->x) * (ver[r]->y - ver[q]->y);
     
         if (val == 0) return 0;  
         return (val > 0)? 1: 2;
@@ -124,34 +124,34 @@ class DCEL{
             c=(i+1)%V;
             if( turn_check(a,b,c)==2 )
             {
-                if(ver[b].y > ver[a].y && (ver[b].y > ver[c].y||ver[b].y==ver[c].y))
+                if(ver[b]->y > ver[a]->y && (ver[b]->y > ver[c]->y||ver[b]->y==ver[c]->y))
                 {
-                    ver[i].type = 2;
+                    ver[i]->type = 2;
                 }
-                else if(ver[b].y < ver[c].y && (ver[b].y < ver[a].y||ver[b].y==ver[a].y))
+                else if(ver[b]->y < ver[c]->y && (ver[b]->y < ver[a]->y||ver[b]->y==ver[a]->y))
                 {
-                    ver[i].type = 3;
+                    ver[i]->type = 3;
                 }else{
-                    ver[i].type = 4;
+                    ver[i]->type = 4;
                 }
             }
             else
             {
-                if(ver[b].y > ver[a].y && (ver[b].y > ver[c].y||ver[b].y==ver[c].y))
+                if(ver[b]->y > ver[a]->y && (ver[b]->y > ver[c]->y||ver[b]->y==ver[c]->y))
                 {
-                    ver[i].type = 0;
+                    ver[i]->type = 0;
                 }
-                else if(ver[b].y < ver[c].y && (ver[b].y < ver[a].y||ver[b].y==ver[a].y))
+                else if(ver[b]->y < ver[c]->y && (ver[b]->y < ver[a]->y||ver[b]->y==ver[a]->y))
                 {
-                    ver[i].type = 1;
+                    ver[i]->type = 1;
                 }
                 else
                 {
-                    ver[i].type = 4;
+                    ver[i]->type = 4;
                 }
             }
         }
-
+        
     }
 
     void addDiag(int a,int b){
@@ -160,27 +160,63 @@ class DCEL{
         face *nf2 = new face;
 
         half_edge *edg = new half_edge;
-        edg->origin = &ver[a]; edg->f = nf1;
+        edg->origin = ver[a]; edg->f = nf1;
         
         half_edge *tw = new half_edge;
-        tw->origin = &ver[b]; tw->twin = edg;
+        tw->origin = ver[b]; tw->twin = edg;
         tw->f = nf2;
 
         edg->twin = tw;
         nf1->rep = edg; nf2->rep = tw;
 
-        vector<int>::iterator it1,it2;
-        half_edge lala;
+        vector<vertex*>::iterator it1,it2;
+        half_edge *lala,*lala2;
+        half_edge *lite,*lite2;
         for(int i=1;i<faces.size();i++){
-            it1 = find ((faces[i].vertices).begin(), (faces[i].vertices).end(), a);
-            it2 = find ((faces[i].vertices).begin(), (faces[i].vertices).end(), b);
             
-            if (it1 != (faces[i].vertices).end() && it2 != (faces[i].vertices).end()){
-                lala = *(ver[a].incidentEdge);
-                while(lala.f != &faces[i]){
-                    lala = *(lala.twin->next);
-                }
+            it1 = find ((faces[i]->vertices).begin(), (faces[i]->vertices).end(), ver[a]);
+            it2 = find ((faces[i]->vertices).begin(), (faces[i]->vertices).end(), ver[b]);
+            
+
+            if (it1 != (faces[i]->vertices).end() && it2 != (faces[i]->vertices).end()){
+                lala = ver[a]->incidentEdge;
+                lala2 = ver[b]->incidentEdge;
                 
+                while(lala->f != faces[i]){
+
+                    lala = lala->twin->next;
+                }
+
+                while(lala2->f != faces[i]){
+                    
+                    lala2 = lala2->twin->next;
+                }
+                lite = lala->prev;lite2 = lala2->prev;
+                
+                lala2->prev = edg; edg->next = lala2; lite->next = edg; edg->prev = lite;
+                lala->prev = tw; tw->next = lala; lite2->next = tw; tw->prev = lite2;
+
+                lite = lala;
+                
+                do{
+                    (nf1->vertices).push_back(lite->origin);
+                    lite->f = nf1;
+                    lite = lite->next;
+                }while(lite != lala);
+
+                lite = lala2;
+                do{
+                    (nf2->vertices).push_back(lite->origin);
+                    lite->f = nf2;
+                    lite = lite->next;
+                }while(lite != lala2);
+
+                faces.erase(faces.begin() + i);
+                faces.push_back(nf1);
+                faces.push_back(nf2);
+
+                edge.push_back(edg);
+                edge.push_back(tw);
                 break;
             }
         }
@@ -190,7 +226,7 @@ class DCEL{
     vector<int> getEventQueue(){
         vector<pair<double,int > > lala;
         for(int i=0;i<V;i++){
-            lala.push_back(make_pair(ver[i].y,i));
+            lala.push_back(make_pair(ver[i]->y,i));
         }
         sort(lala.begin(),lala.end());
     
