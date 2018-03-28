@@ -1,5 +1,5 @@
 #include <bits/stdc++.h>
-
+//turn_check 1->left turn 2->right turn
 using namespace std;
 
 struct half_edge;
@@ -122,6 +122,7 @@ class DCEL{
                 a = V-1;
             b=i%V;
             c=(i+1)%V;
+            cout<<i<<"    "<<turn_check(a,b,c);
             if( turn_check(a,b,c)==2 )
             {
                 if(ver[b]->y > ver[a]->y && (ver[b]->y > ver[c]->y||ver[b]->y==ver[c]->y))
@@ -150,12 +151,14 @@ class DCEL{
                     ver[i]->type = 4;
                 }
             }
+             cout<<"   dkj   "<<ver[i]->type<<endl;
         }
         
     }
 
     void addDiag(int a,int b){
         
+        cout << a << " "  << b << endl;
         face *nf1 = new face;
         face *nf2 = new face;
 
@@ -222,6 +225,8 @@ class DCEL{
         }
     }
 
+
+
     //ToDo - sort according to x coord if y is same
     vector<int> getEventQueue(){
         vector<pair<double,int > > lala;
@@ -232,7 +237,7 @@ class DCEL{
     
         vector<int> eventQueue;
 
-        for(int i=0;i<V;i++){
+        for(int i=V-1;i>=0;i--){
             eventQueue.push_back(lala[i].second);
         }
 

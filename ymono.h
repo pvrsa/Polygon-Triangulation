@@ -119,6 +119,8 @@ void makeYmono(DCEL &graph){
 
 
 void handleStartVertex(int x,DCEL &graph){
+    cout << "Start" << endl;
+   
     half_edge *neig = graph.edge[((x+graph.V-1) % graph.V)*2]; 
     status.insert(neig);
 
@@ -126,6 +128,8 @@ void handleStartVertex(int x,DCEL &graph){
 }
 
 void handleEndVertex(int x,DCEL &graph){
+    cout << "End" << endl;
+    
     half_edge *neig = graph.edge[x*2];
     int c;
     if(helper[neig]){
@@ -139,12 +143,14 @@ void handleEndVertex(int x,DCEL &graph){
 }
 
 void handleSplitVertex(int x,DCEL &graph){
+    cout << "Split" << endl;
+    //  cout << graph.ver[x]->x << endl;
     set<half_edge*>::iterator it = status.find(graph.ver[x]);
     vertex* con = helper[*it];
     int c = find(graph.ver.begin(),graph.ver.end(),con) - graph.ver.begin();
 
     graph.addDiag(x,c);
-
+    cout << x << " " << c << endl;
     helper[*it] = graph.ver[x];
 
     half_edge *neig = graph.edge[((x+graph.V-1) % graph.V)*2]; 
@@ -153,11 +159,69 @@ void handleSplitVertex(int x,DCEL &graph){
 }
 
 void handleMergeVertex(int x,DCEL &graph){
+    cout << "Merge" << endl;
     
+    half_edge *neig = graph.edge[x*2];
+    int c;
+    if(helper[neig]){
+        if(helper[neig]->type == 3){
+            c = find(graph.ver.begin(),graph.ver.end(),helper[neig]) - graph.ver.begin();
+            graph.addDiag(x,c);
+        }
+    }
+
+    status.erase(neig);
+
+    set<half_edge*>::iterator it = status.find(graph.ver[x]);
+    vertex* con = helper[*it];
+    c = find(graph.ver.begin(),graph.ver.end(),con) - graph.ver.begin();
+    
+    if(con->type == 3){
+        graph.addDiag(x,c);
+    }
+    helper[*it] = graph.ver[x];
+ 
 }
 
 void handleRegVertex(int x,DCEL &graph){
+    cout << "Regular" << endl;
     
+    half_edge *neig = graph.ver[x]->incidentEdge;
+    if(neig->origin->y < neig->twin->origin->y){
+        neig = graph.edge[x*2];
+        int c;
+        if(helper[neig]){
+            if(helper[neig]->type == 3){
+                c = find(graph.ver.begin(),graph.ver.end(),helper[neig]) - graph.ver.begin();
+                graph.addDiag(x,c);
+            }
+        }
+        status.erase(neig);
+
+        neig = graph.edge[((x+graph.V-1) % graph.V)*2]; 
+        status.insert(neig);
+        
+        helper[neig] = graph.ver[x];
+        
+    }else{
+        set<half_edge*>::iterator it = status.find(graph.ver[x]);
+        vertex* con = helper[*it];
+        if(con->type == 3){
+            int c = find(graph.ver.begin(),graph.ver.end(),con) - graph.ver.begin();
+            graph.addDiag(x,c);
+        }
+        helper[*it] = graph.ver[x];
+    }
+
+}
+
+
+void triangulate(DCEL &graph)
+{
+    for(int j = 0;j < graph.faces.size();j++)
+    {
+
+    }
 }
 
 
