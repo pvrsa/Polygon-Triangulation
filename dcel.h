@@ -109,7 +109,7 @@ class DCEL{
                 (ver[q]->x - ver[p]->x) * (ver[r]->y - ver[q]->y);
     
         if (val == 0) return 0;  
-        return (val > 0)? 1: 2;
+        return (val > 0)? 1:2;
     }
 
     void setTypeV(){
