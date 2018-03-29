@@ -1,5 +1,4 @@
 #include <bits/stdc++.h>
-//turn_check 1->left turn 2->right turn
 using namespace std;
 
 struct half_edge;
@@ -26,6 +25,7 @@ struct half_edge{
     face *f;
 
     half_edge(){
+        f = NULL;
         next = NULL;
         prev = NULL;
     }
@@ -104,6 +104,7 @@ class DCEL{
         setTypeV();
     }
 
+    //turn_check 2->left turn 1->right turn
     int turn_check(int p, int q, int r){
         int val = (ver[q]->y - ver[p]->y) * (ver[r]->x - ver[q]->x) -
                 (ver[q]->x - ver[p]->x) * (ver[r]->y - ver[q]->y);
@@ -163,14 +164,23 @@ class DCEL{
         face *nf2 = new face;
 
         half_edge *edg = new half_edge;
-        edg->origin = ver[a]; edg->f = nf1;
-        
         half_edge *tw = new half_edge;
-        tw->origin = ver[b]; tw->twin = edg;
+
+        if(ver[a]->x < ver[b]->x){
+            edg->origin = ver[a]; 
+            tw->origin = ver[b];
+        }else{
+            edg->origin = ver[b]; 
+            tw->origin = ver[a];
+        }
+
+        tw->twin = edg;edg->f = nf1;
         tw->f = nf2;
 
         edg->twin = tw;
+
         nf1->rep = edg; nf2->rep = tw;
+        
 
         vector<vertex*>::iterator it1,it2;
         half_edge *lala,*lala2;
@@ -223,6 +233,20 @@ class DCEL{
                 break;
             }
         }
+    }
+    
+    void addEdge(vertex* a,vertex* b){
+        
+        half_edge *edg = new half_edge;
+        edg->origin = a;
+        
+        half_edge *tw = new half_edge;
+        tw->origin = b; 
+        tw->twin = edg;edg->twin = tw;
+
+        edge.push_back(edg);
+        edge.push_back(tw);
+
     }
 
 
